@@ -9,6 +9,8 @@ import {AuthService} from './service/auth.service';
 import {AuthGuard} from './service/auth.guard';
 import {FormsModule, ReactiveFormsModule} from '@angular/forms';
 import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
+import {AssetsService} from './service/assets.service';
+import {HttpClientModule} from '@angular/common/http';
 
 @NgModule({
   declarations: [
@@ -21,11 +23,14 @@ import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
     BrowserAnimationsModule,
     FormsModule,
     ReactiveFormsModule,
-    AppRoutingModule
+    AppRoutingModule,
+    HttpClientModule
   ],
   providers: [
     AuthService,
-    AuthGuard],
+    AuthGuard,
+    AssetsService
+  ],
   bootstrap: [AppComponent]
 })
 export class AppModule { }
