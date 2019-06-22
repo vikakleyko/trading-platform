@@ -1,0 +1,28 @@
+<div class="ui-container">
+  <p-tabMenu [model]="menuItems" [activeItem]="menuItems[0]"></p-tabMenu>
+
+
+  <div *ngIf="showPortfolioPage">
+  <p-table [value]="allAssets">
+    <ng-template pTemplate="header">
+      <tr>
+        <th> </th>
+        <th>Asset name</th>
+        <th>Price, $</th>
+        <th>Amount</th>
+        <th>Value</th>
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="body" let-asset>
+      <tr>
+        <td>{{asset.id}}</td>
+        <td>{{asset.name}}</td>
+        <td>{{asset.price}}</td>
+        <td>{{asset.amount}}</td>
+        <td>{{asset.value}}</td>
+      </tr>
+    </ng-template>
+  </p-table>
+  </div>
+
+</div>

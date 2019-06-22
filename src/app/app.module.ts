@@ -11,6 +11,9 @@ import {FormsModule, ReactiveFormsModule} from '@angular/forms';
 import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
 import {AssetsService} from './service/assets.service';
 import {HttpClientModule} from '@angular/common/http';
+import {TabMenuModule} from 'primeng/tabmenu';
+import {TableModule} from 'primeng/table';
+import {DropdownModule} from 'primeng/dropdown';
 
 @NgModule({
   declarations: [
@@ -24,7 +27,10 @@ import {HttpClientModule} from '@angular/common/http';
     FormsModule,
     ReactiveFormsModule,
     AppRoutingModule,
-    HttpClientModule
+    HttpClientModule,
+    TabMenuModule,
+    TableModule,
+    DropdownModule
   ],
   providers: [
     AuthService,
