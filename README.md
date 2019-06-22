@@ -22,6 +22,19 @@ Run `ng test` to execute the unit tests via [Karma](https://karma-runner.github.
 
 Run `ng e2e` to execute the end-to-end tests via [Protractor](http://www.protractortest.org/).
 
+## Install primeng UI components used in this project
+
+Run `npm install primeng --save` [Protractor](https://www.primefaces.org/primeng/#/setup).
+
+## Install primeng icons
+
+Run `npm install primeicons --save` [Protractor](https://www.primefaces.org/primeng/#/setup).
+
+## Install animations module
+
+Run `npm install @angular/animations --save` [Protractor](https://www.primefaces.org/primeng/#/setup).
+
 ## Further help
 
 To get more help on the Angular CLI use `ng help` or go check out the [Angular CLI README](https://github.com/angular/angular-cli/blob/master/README.md).
+
