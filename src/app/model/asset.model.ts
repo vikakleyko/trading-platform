@@ -1,7 +1,7 @@
 export class Asset {
   id: number;
   name: string;
-  price: string;
+  price: number;
   amount: number;
   value: number;
 }

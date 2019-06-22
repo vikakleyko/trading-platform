@@ -14,6 +14,8 @@ import {HttpClientModule} from '@angular/common/http';
 import {TabMenuModule} from 'primeng/tabmenu';
 import {TableModule} from 'primeng/table';
 import {DropdownModule} from 'primeng/dropdown';
+import {ButtonModule} from 'primeng/button';
+import {DialogModule} from 'primeng/dialog';
 
 @NgModule({
   declarations: [
@@ -30,7 +32,9 @@ import {DropdownModule} from 'primeng/dropdown';
     HttpClientModule,
     TabMenuModule,
     TableModule,
-    DropdownModule
+    DropdownModule,
+    ButtonModule,
+    DialogModule
   ],
   providers: [
     AuthService,

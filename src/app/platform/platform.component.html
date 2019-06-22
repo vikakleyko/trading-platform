@@ -2,8 +2,8 @@
   <p-tabMenu [model]="menuItems" [activeItem]="menuItems[0]"></p-tabMenu>
 
 
-  <div *ngIf="showPortfolioPage">
-  <p-table [value]="allAssets">
+<div *ngIf="showPortfolioPage">
+  <p-table [value]="myAssets">
     <ng-template pTemplate="header">
       <tr>
         <th> </th>
@@ -23,6 +23,44 @@
       </tr>
     </ng-template>
   </p-table>
+</div>
+
+  <div *ngIf="showBuySellPage">
+    <p-table [value]="allAssets">
+      <ng-template pTemplate="header">
+        <tr>
+          <th></th>
+          <th>Asset name</th>
+          <th>Price, $</th>
+          <th>Amount</th>
+          <th>Buy/sell</th>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="body" let-asset>
+        <tr>
+          <td>{{asset.id}}</td>
+          <td>{{asset.name}}</td>
+          <td>{{asset.price}}</td>
+          <td>{{asset.amount}}</td>
+          <td>
+            <button type="button" pButton label="BUY" (click)="openDialogToBuySellAsset(asset)"></button>
+            <button type="button" pButton label="SELL" (click)="openDialogToBuySellAsset(asset)"></button>
+
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
+
+    <p-dialog header="Dialog" [(visible)]="buySellDialog" [modal]="true" [responsive]="true" width="300" height="200">
+
+      <p-footer>
+        <button type="button" pButton icon="pi pi-check" (click)="buySellDialog=false" label="Yes"></button>
+        <button type="button" pButton icon="pi pi-close" (click)="buySellDialog=false" label="No" class="ui-button-secondary"></button>
+      </p-footer>
+    </p-dialog>
+
   </div>
+
+
 
 </div>
