@@ -5,6 +5,8 @@
 export const environment = {
   production: false,
   assetsURL: './assets/assets-list.json',
+  username: 'dev',
+  password: 'dev',
 };
 
 /*
