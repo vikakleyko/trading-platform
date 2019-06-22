@@ -7,6 +7,7 @@ import { PlatformComponent } from './platform/platform.component';
 import { LoginComponent } from './login/login.component';
 import {AuthService} from './service/auth.service';
 import {AuthGuard} from './service/auth.guard';
+import {FormsModule, ReactiveFormsModule} from '@angular/forms';
 
 @NgModule({
   declarations: [
@@ -16,6 +17,8 @@ import {AuthGuard} from './service/auth.guard';
   ],
   imports: [
     BrowserModule,
+    FormsModule,
+    ReactiveFormsModule,
     AppRoutingModule
   ],
   providers: [
