@@ -70,6 +70,7 @@ export class PlatformComponent implements OnInit {
     this.generateRandomPriceAndAmount(assetsList);
     this.generateAllAssetsList(assetsList);
     this.generateMyAssetsList(this.myAssets);
+
   }
 
   generateRandomPriceAndAmount(assets: Asset[]) {
@@ -90,19 +91,19 @@ export class PlatformComponent implements OnInit {
   generateAllAssetsList(assets: Asset[]) {
     this.allAssets = [];
 
-    return assets.forEach( as => {
+    assets.forEach( as => {
       this.allAssets.push({ id: as.id, name: as.name, amount: this.findAmountByAssetName(as.name),
                             price: this.findPriceByAssetName(as.name), value: null});
     });
   }
 
   generateMyAssetsList(assets: Asset[]) {
-    if (assets != null) {
+    if (assets.length != null) {
 
       this.totalValue = 0;
       this.myAssets = [];
 
-      return assets.forEach( as => {
+      assets.forEach( as => {
         const asValue = Number(as.amount * this.findPriceByAssetName(as.name));
         this.myAssets.push({ id: as.id,
                              name: as.name,
@@ -113,6 +114,9 @@ export class PlatformComponent implements OnInit {
         // count total costs of your assets with current prices
         this.totalValue += Number(asValue.toFixed(2));
       });
+      this.myAssets = this.myAssets.filter( as => as.amount !== 0);
+      console.log(this.myAssets);
+      console.log(this.totalValue);
     }
   }
 
@@ -166,7 +170,7 @@ export class PlatformComponent implements OnInit {
   }
 
   buyAsset() {
-    if (this.selectedAmount > this.selectedAsset.amount) {
+    if (this.selectedAmount - this.selectedAsset.amount > 0) {
         this.showMsg('This amount is not available');
         return;
     }
@@ -175,7 +179,6 @@ export class PlatformComponent implements OnInit {
         return;
     } else {
       this.availableMoney = this.availableMoney - this.selectedAmount * Number(this.selectedAsset.price);
-      console.log(this.availableMoney);
 
       this.showMsg('The operation has been successful');
 
@@ -187,7 +190,7 @@ export class PlatformComponent implements OnInit {
   }
 
   sellAsset() {
-    if (this.selectedAmount > this.selectedAsset.amount) {
+    if (this.selectedAmount - this.selectedAsset.amount > 0) {
       this.showMsg('You have only ' + this.selectedAsset.amount + ' to sell');
       return;
     }
@@ -208,10 +211,13 @@ export class PlatformComponent implements OnInit {
                             amount: this.selectedAmount,
                             price: this.findPriceByAssetName(asset.name),
                             value: +(this.selectedAmount * this.findPriceByAssetName(asset.name)).toFixed(2)});
-      } else {
+
+      // update my portfolio table
+      this.generateMyAssetsList(this.myAssets);
+
+    } else {
           this.updateList(existingItem[0], true);
-    }
-    this.generateMyAssetsList(this.myAssets);
+      }
   }
 
   updateList(item: Asset, buy: boolean) {
@@ -219,7 +225,7 @@ export class PlatformComponent implements OnInit {
     if (buy) {
       asAmount = Number(item.amount) + Number(this.selectedAmount);
     } else {
-      asAmount = Number(item.amount) - Number(this.selectedAmount);
+      asAmount = item.amount - this.selectedAmount;
     }
 
     const asValue = asAmount * this.findPriceByAssetName(item.name).toFixed(2);
@@ -232,6 +238,8 @@ export class PlatformComponent implements OnInit {
 
     const atIndex = this.myAssets.findIndex( a => a.name === item.name);
     this.myAssets = this.update(this.myAssets, newItem, atIndex);
+    // update my portfolio table
+    this.generateMyAssetsList(this.myAssets);
   }
 
   // update selected asset parameters
