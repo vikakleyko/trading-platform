@@ -16,6 +16,9 @@ import {TableModule} from 'primeng/table';
 import {DropdownModule} from 'primeng/dropdown';
 import {ButtonModule} from 'primeng/button';
 import {DialogModule} from 'primeng/dialog';
+import {InputTextModule} from 'primeng/inputtext';
+import {MessagesModule} from 'primeng/messages';
+import {MessageModule} from 'primeng/message';
 
 @NgModule({
   declarations: [
@@ -34,7 +37,10 @@ import {DialogModule} from 'primeng/dialog';
     TableModule,
     DropdownModule,
     ButtonModule,
-    DialogModule
+    DialogModule,
+    InputTextModule,
+    MessagesModule,
+    MessageModule
   ],
   providers: [
     AuthService,

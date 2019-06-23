@@ -1,6 +1,8 @@
+
+<p-messages [(value)]="msgs"></p-messages>
+
 <div class="ui-container">
   <p-tabMenu [model]="menuItems" [activeItem]="menuItems[0]"></p-tabMenu>
-
 
 <div *ngIf="showPortfolioPage">
   <p-table [value]="myAssets">
@@ -23,6 +25,9 @@
       </tr>
     </ng-template>
   </p-table>
+
+  <div *ngIf="myAssets.length === 0" class="no-assets-title">No assets</div>
+
 </div>
 
   <div *ngIf="showBuySellPage">
@@ -39,23 +44,61 @@
       <ng-template pTemplate="body" let-asset>
         <tr>
           <td>{{asset.id}}</td>
-          <td>{{asset.name}}</td>
+          <td>{{asset.name.toUpperCase()}}</td>
           <td>{{asset.price}}</td>
           <td>{{asset.amount}}</td>
           <td>
-            <button type="button" pButton label="BUY" (click)="openDialogToBuySellAsset(asset)"></button>
-            <button type="button" pButton label="SELL" (click)="openDialogToBuySellAsset(asset)"></button>
+            <button type="button" pButton label="BUY" (click)="openDialogToBuy(asset)"></button>
+            <button type="button" pButton label="SELL" (click)="openDialogToSell(asset)"
+                    style="background-color: #0055aa" ></button>
 
           </td>
         </tr>
       </ng-template>
     </p-table>
 
-    <p-dialog header="Dialog" [(visible)]="buySellDialog" [modal]="true" [responsive]="true" width="300" height="200">
+    <!--buying dialog-->
+    <p-dialog *ngIf="selectedAsset" [(visible)]="buyingDialog" [responsive]="true" [style]="{width: '450px', minWidth: '200px'}">
+      <p-header>
+        BUYING {{selectedAsset.name.toUpperCase()}}
+      </p-header>
+
+            <div class="item-name">Available funds, $:</div>
+            <input type="text" pInputText [(ngModel)]="availableFunds" [disabled]="true"/>
+
+            <div class="item-name">Available amount:</div>
+            <input type="text" pInputText [(ngModel)]="selectedAsset.amount" [disabled]="true"/>
+
+            <div class="item-name">Current price, $:</div>
+            <input type="text" pInputText [(ngModel)]="selectedAsset.price" [disabled]="true"/>
+
+            <div class="item-name">Amount to buy:</div>
+            <input type="text" pInputText [(ngModel)]="selectedAmount"/>
 
       <p-footer>
-        <button type="button" pButton icon="pi pi-check" (click)="buySellDialog=false" label="Yes"></button>
-        <button type="button" pButton icon="pi pi-close" (click)="buySellDialog=false" label="No" class="ui-button-secondary"></button>
+        <button type="button" pButton icon="pi pi-check" (click)="buyAsset()" label="Buy"></button>
+        <button type="button" pButton icon="pi pi-close" (click)="buyingDialog=false" label="Cancel" class="ui-button-secondary"></button>
+      </p-footer>
+    </p-dialog>
+
+    <!--selling dialog-->
+    <p-dialog *ngIf="selectedAsset" [(visible)]="sellingDialog" [responsive]="true" [style]="{width: '450px', minWidth: '200px'}">
+      <p-header>
+        SELLING {{selectedAsset.name.toUpperCase()}}
+      </p-header>
+
+      <div class="item-name">Your available amount:</div>
+      <input type="text" pInputText [(ngModel)]="selectedAsset.amount" [disabled]="true"/>
+
+      <div class="item-name">Current price, $:</div>
+      <input type="text" pInputText [(ngModel)]="selectedAsset.price" [disabled]="true"/>
+
+      <div class="item-name">Amount to sell:</div>
+      <input type="text" pInputText [(ngModel)]="selectedAmount"/>
+
+      <p-footer>
+        <button type="button" pButton icon="pi pi-check" (click)="sellAsset()" label="Sell"></button>
+        <button type="button" pButton icon="pi pi-close" (click)="sellingDialog=false" label="Cancel" class="ui-button-secondary"></button>
       </p-footer>
     </p-dialog>
 

@@ -1,3 +1,13 @@
 .ui-container {
-  margin: 60px 120px;
+  margin: 70px 120px;
+}
+
+
+.no-assets-title {
+  margin: 30px;
+}
+.item-name {
+  display: inline-block;
+  min-width: 160px;
+  line-height: 3;
 }

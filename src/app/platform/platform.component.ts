@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import {AssetsService} from '../service/assets.service';
 import {Asset} from '../model/asset.model';
-import {MenuItem} from 'primeng/api';
+import {MenuItem, Message, MessageService} from 'primeng/api';
 
 @Component({
   selector: 'app-platform',
@@ -14,29 +14,40 @@ export class PlatformComponent implements OnInit {
   myAssets: Asset[];
   menuItems: MenuItem[];
 
+  priceVsAmountList: any[];
+
+  availableFunds: number;
+
+  // selected amount of units to buy oe sell
+  selectedAmount: number;
+
   selectedAsset: Asset;
 
   showPortfolioPage: Boolean = true;
   showBuySellPage: Boolean = false;
-  buySellDialog: Boolean = false;
+  buyingDialog: Boolean = false;
+  sellingDialog: Boolean = false;
+
+  timeInterval = 15;
+  msgs: Message[] = [];
 
   constructor(private assetsService: AssetsService) { }
 
   ngOnInit() {
-    this.allAssets = [];
     this.myAssets = [];
+    this.availableFunds = 100000;
 
     this.initMenuItems();
 
-    this.assetsService.getAssets().subscribe( resp => {
-      const assets = resp;
-      console.log(assets);
-      if (assets.length != null) {
+    this.assetsService.getAssets().subscribe( assetsList => {
 
-        let i = 1;
+      if (assetsList.length != null) {
+
+        this.generateLists(assetsList);
+
         setInterval(() => {
-            this.generateAssetsList(assets);
-        }, 3000);
+          this.generateLists(assetsList);
+        }, this.timeInterval * 1000);
 
       } else {
         console.log('assets list is empty');
@@ -51,22 +62,54 @@ export class PlatformComponent implements OnInit {
     ];
   }
 
-  generateAssetsList(assets: Asset[]) {
+  generateLists(assetsList: Asset[]) {
+
+    this.generateRandomPriceAndAmount(assetsList);
+    this.generateAllAssetsList(assetsList);
+
+    // if (this.myAssets.length != null) {
+    //    this.generateMyAssetsList(assetsList);
+    //    console.log('updates');
+    // }
+  }
+
+  generateRandomPriceAndAmount(assets: Asset[]) {
+    this.priceVsAmountList = [];
+
+    let randomAmount = null;
+    let randomStockPrice = null;
+
+    return assets.forEach( a => {
+
+      randomAmount = this.generateAmout();
+      randomStockPrice = Number(this.generateStockPrice(a.name).toFixed(2));
+
+      this.priceVsAmountList.push({ name: a.name, price: randomStockPrice, amount: randomAmount});
+      console.log(this.priceVsAmountList);
+    });
+  }
+
+  generateAllAssetsList(assets: Asset[]) {
     this.allAssets = [];
+
     assets.forEach( as => {
+      this.allAssets.push({ id: as.id, name: as.name, amount: this.findAmountByAssetName(as.name),
+                          price: this.findPriceByAssetName(as.name), value: null});
+    });
+  }
 
-      const asAmount = this.generateAmout();
-      const asPrice = this.generateStockPrice(as.name).toFixed(2);
-      console.log(this.generateAmout());
-      console.log(this.generateStockPrice('gold').toFixed(2));
+  generateMyAssetsList(assets: Asset[]) {
+    this.myAssets = [];
 
-      this.allAssets.push({ id: as.id, name: as.name, amount: asAmount, price: +asPrice, value: null});
+    assets.forEach( as => {
+      this.myAssets.push({ id: as.id, name: as.name, amount: as.amount, price: this.findPriceByAssetName(as.name),
+                           value: as.amount * this.findPriceByAssetName(as.name)});
     });
   }
 
   generateAmout() {
     // return random int
-    return 100 + this.getRandomInt(-30, 30);
+    return 5000 + this.getRandomInt(-2000, 2000);
   }
 
   getRandomInt(min, max) {
@@ -87,18 +130,52 @@ export class PlatformComponent implements OnInit {
     return Math.abs(3 * Math.sin(2 * hash * n) + Math.random() * amplitude);
   }
 
-  openDialogToBuySellAsset(asset: Asset) {
+  findAmountByAssetName(name: string) {
+    return this.priceVsAmountList.find( item => item.name === name).amount;
+  }
+
+  findPriceByAssetName(name: string) {
+    return this.priceVsAmountList.find( item => item.name === name).price;
+  }
+
+
+  openDialogToBuy(asset: Asset) {
     this.selectedAsset = asset;
-    console.log(asset);
-    this.buySellDialog = true;
+    this.buyingDialog = true;
+  }
+
+  openDialogToSell(asset: Asset) {
+    this.selectedAsset = asset;
+    this.sellingDialog = true;
   }
 
   buyAsset() {
-    console.log('buy asset');
+    console.log('amount to buy ' + this.selectedAmount);
+    if (this.selectedAmount > this.selectedAsset.amount) {
+        this.showMsg('This amount is not available');
+        return;
+    }
+    if (!this.enoughFunds()) {
+        this.showMsg('You dont have enough funds');
+        return;
+    } else {
+      this.availableFunds = this.availableFunds - this.selectedAmount * this.selectedAsset.price;
+      this.showMsg('The operation has been successful');
+      this.buyingDialog = false;
+      this.selectedAmount = null;
+    }
   }
 
   sellAsset() {
     console.log('sell asset');
+
+    this.sellingDialog = false;
+    this.selectedAmount = null;
+
+  }
+
+  enoughFunds() {
+    return this.availableFunds > this.selectedAmount * this.selectedAsset.price;
   }
 
   openPortfolioPage() {
@@ -109,5 +186,10 @@ export class PlatformComponent implements OnInit {
   openBuySellPage() {
     this.showBuySellPage = true;
     this.showPortfolioPage = false;
+  }
+
+  showMsg(msg: string) {
+    this.msgs = [];
+    this.msgs.push({severity: 'info', summary: 'Message', detail: msg});
   }
 }
