@@ -8,7 +8,6 @@
   <p-table [value]="myAssets">
     <ng-template pTemplate="header">
       <tr>
-        <th> </th>
         <th>Asset name</th>
         <th>Price, $</th>
         <th>Amount</th>
@@ -17,8 +16,7 @@
     </ng-template>
     <ng-template pTemplate="body" let-asset>
       <tr>
-        <td>{{asset.id}}</td>
-        <td>{{asset.name}}</td>
+        <td>{{asset.name.toUpperCase()}}</td>
         <td>{{asset.price}}</td>
         <td>{{asset.amount}}</td>
         <td>{{asset.value}}</td>
@@ -27,6 +25,8 @@
   </p-table>
 
   <div *ngIf="myAssets.length === 0" class="no-assets-title">No assets</div>
+
+  <div *ngIf="myAssets.length !== 0">Total value: {{totalValue}}</div>
 
 </div>
 
@@ -49,13 +49,15 @@
           <td>{{asset.amount}}</td>
           <td>
             <button type="button" pButton label="BUY" (click)="openDialogToBuy(asset)"></button>
+
             <button type="button" pButton label="SELL" (click)="openDialogToSell(asset)"
-                    style="background-color: #0055aa" ></button>
+                    style="background-color: #0055aa"></button>
 
           </td>
         </tr>
       </ng-template>
     </p-table>
+
 
     <!--buying dialog-->
     <p-dialog *ngIf="selectedAsset" [(visible)]="buyingDialog" [responsive]="true" [style]="{width: '450px', minWidth: '200px'}">
@@ -64,7 +66,7 @@
       </p-header>
 
             <div class="item-name">Available funds, $:</div>
-            <input type="text" pInputText [(ngModel)]="availableFunds" [disabled]="true"/>
+            <input type="text" pInputText [(ngModel)]="availableMoney" [disabled]="true"/>
 
             <div class="item-name">Available amount:</div>
             <input type="text" pInputText [(ngModel)]="selectedAsset.amount" [disabled]="true"/>

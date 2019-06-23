@@ -16,11 +16,13 @@ export class PlatformComponent implements OnInit {
 
   priceVsAmountList: any[];
 
-  availableFunds: number;
+  availableMoney: number; // 100000 $
+  totalValue: number;
 
   // selected amount of units to buy oe sell
   selectedAmount: number;
 
+  // selected asset to buy/sell
   selectedAsset: Asset;
 
   showPortfolioPage: Boolean = true;
@@ -28,21 +30,22 @@ export class PlatformComponent implements OnInit {
   buyingDialog: Boolean = false;
   sellingDialog: Boolean = false;
 
-  timeInterval = 15;
+  // interval to update prices and available amount, seconds
+  timeInterval = 40;
+
   msgs: Message[] = [];
 
   constructor(private assetsService: AssetsService) { }
 
   ngOnInit() {
     this.myAssets = [];
-    this.availableFunds = 100000;
+    this.availableMoney = 100000;
 
     this.initMenuItems();
 
     this.assetsService.getAssets().subscribe( assetsList => {
 
       if (assetsList.length != null) {
-
         this.generateLists(assetsList);
 
         setInterval(() => {
@@ -66,50 +69,56 @@ export class PlatformComponent implements OnInit {
 
     this.generateRandomPriceAndAmount(assetsList);
     this.generateAllAssetsList(assetsList);
-
-    // if (this.myAssets.length != null) {
-    //    this.generateMyAssetsList(assetsList);
-    //    console.log('updates');
-    // }
+    this.generateMyAssetsList(this.myAssets);
   }
 
   generateRandomPriceAndAmount(assets: Asset[]) {
     this.priceVsAmountList = [];
 
-    let randomAmount = null;
-    let randomStockPrice = null;
+    let randomAmount = 0;
+    let randomStockPrice = 0;
 
     return assets.forEach( a => {
 
-      randomAmount = this.generateAmout();
+      randomAmount = this.generateAmount();
       randomStockPrice = Number(this.generateStockPrice(a.name).toFixed(2));
 
       this.priceVsAmountList.push({ name: a.name, price: randomStockPrice, amount: randomAmount});
-      console.log(this.priceVsAmountList);
     });
   }
 
   generateAllAssetsList(assets: Asset[]) {
     this.allAssets = [];
 
-    assets.forEach( as => {
+    return assets.forEach( as => {
       this.allAssets.push({ id: as.id, name: as.name, amount: this.findAmountByAssetName(as.name),
-                          price: this.findPriceByAssetName(as.name), value: null});
+                            price: this.findPriceByAssetName(as.name), value: null});
     });
   }
 
   generateMyAssetsList(assets: Asset[]) {
-    this.myAssets = [];
+    if (assets != null) {
 
-    assets.forEach( as => {
-      this.myAssets.push({ id: as.id, name: as.name, amount: as.amount, price: this.findPriceByAssetName(as.name),
-                           value: as.amount * this.findPriceByAssetName(as.name)});
-    });
+      this.totalValue = 0;
+      this.myAssets = [];
+
+      return assets.forEach( as => {
+        const asValue = Number(as.amount * this.findPriceByAssetName(as.name));
+        this.myAssets.push({ id: as.id,
+                             name: as.name,
+                             amount: as.amount,
+                             price: this.findPriceByAssetName(as.name),
+                             value: Number(asValue.toFixed(2))});
+
+        // count total costs of your assets with current prices
+        this.totalValue += Number(asValue.toFixed(2));
+      });
+    }
   }
 
-  generateAmout() {
-    // return random int
-    return 5000 + this.getRandomInt(-2000, 2000);
+  // return random int as available amount
+  generateAmount() {
+    return 3000 + this.getRandomInt(-1500, 1500);
   }
 
   getRandomInt(min, max) {
@@ -118,8 +127,8 @@ export class PlatformComponent implements OnInit {
     return Math.floor(Math.random() * (max - min)) + min; // the maximum is exclusive and the minimum is inclusive
   }
 
+  // return random stock price
   generateStockPrice(name: string) {
-    // return random price
     const hash = name.split('').reduce(
       function (a, b) {
         a = (( a << 5 ) - a) + b.charCodeAt(0); return a & a; }, 0
@@ -138,6 +147,9 @@ export class PlatformComponent implements OnInit {
     return this.priceVsAmountList.find( item => item.name === name).price;
   }
 
+  findAssetByName(asset: Asset) {
+    return this.myAssets.find( as => as.name === asset.name);
+  }
 
   openDialogToBuy(asset: Asset) {
     this.selectedAsset = asset;
@@ -145,12 +157,15 @@ export class PlatformComponent implements OnInit {
   }
 
   openDialogToSell(asset: Asset) {
-    this.selectedAsset = asset;
-    this.sellingDialog = true;
+    if (this.findAssetByName(asset)) {
+        this.selectedAsset = this.myAssets.filter( as => as.name === asset.name)[0];
+        this.sellingDialog = true;
+    } else {
+      this.showMsg('you dont this kind of asset');
+    }
   }
 
   buyAsset() {
-    console.log('amount to buy ' + this.selectedAmount);
     if (this.selectedAmount > this.selectedAsset.amount) {
         this.showMsg('This amount is not available');
         return;
@@ -159,23 +174,73 @@ export class PlatformComponent implements OnInit {
         this.showMsg('You dont have enough funds');
         return;
     } else {
-      this.availableFunds = this.availableFunds - this.selectedAmount * this.selectedAsset.price;
+      this.availableMoney = this.availableMoney - this.selectedAmount * Number(this.selectedAsset.price);
+      console.log(this.availableMoney);
+
       this.showMsg('The operation has been successful');
+
+      this.continueBuying(this.selectedAsset);
+
       this.buyingDialog = false;
-      this.selectedAmount = null;
+      this.selectedAmount = 0;
     }
   }
 
   sellAsset() {
-    console.log('sell asset');
+    if (this.selectedAmount > this.selectedAsset.amount) {
+      this.showMsg('You have only ' + this.selectedAsset.amount + ' to sell');
+      return;
+    }
+    this.showMsg('The operation has been successful');
+
+    this.updateList(this.selectedAsset, false);
 
     this.sellingDialog = false;
-    this.selectedAmount = null;
+    this.selectedAmount = 0;
+  }
 
+  continueBuying(asset: Asset) {
+    const existingItem = this.myAssets.filter( a => a.name === asset.name);
+
+    if (!existingItem[0]) {
+        this.myAssets.push({id: asset.id,
+                            name: asset.name,
+                            amount: this.selectedAmount,
+                            price: this.findPriceByAssetName(asset.name),
+                            value: +(this.selectedAmount * this.findPriceByAssetName(asset.name)).toFixed(2)});
+      } else {
+          this.updateList(existingItem[0], true);
+    }
+    this.generateMyAssetsList(this.myAssets);
+  }
+
+  updateList(item: Asset, buy: boolean) {
+    let asAmount;
+    if (buy) {
+      asAmount = Number(item.amount) + Number(this.selectedAmount);
+    } else {
+      asAmount = Number(item.amount) - Number(this.selectedAmount);
+    }
+
+    const asValue = asAmount * this.findPriceByAssetName(item.name).toFixed(2);
+
+    const newItem = { id: item.id,
+                      name: item.name,
+                      amount: asAmount,
+                      price:  this.findPriceByAssetName(item.name),
+                      value: asValue};
+
+    const atIndex = this.myAssets.findIndex( a => a.name === item.name);
+    this.myAssets = this.update(this.myAssets, newItem, atIndex);
+  }
+
+  // update selected asset parameters
+  update(array, newItem, atIndex) {
+    return array.map((item, index) => index === atIndex ? newItem : item);
   }
 
   enoughFunds() {
-    return this.availableFunds > this.selectedAmount * this.selectedAsset.price;
+    return this.availableMoney > this.selectedAmount * this.selectedAsset.price;
   }
 
   openPortfolioPage() {
@@ -190,6 +255,6 @@ export class PlatformComponent implements OnInit {
 
   showMsg(msg: string) {
     this.msgs = [];
-    this.msgs.push({severity: 'info', summary: 'Message', detail: msg});
+    this.msgs.push({severity: 'info', summary: 'Message', detail: ': ' + msg});
   }
 }
