@@ -1,7 +1,8 @@
-import { Component, OnInit } from '@angular/core';
+import {Component, OnChanges, OnInit, SimpleChanges, ViewChild} from '@angular/core';
 import {AssetsService} from '../service/assets.service';
 import {Asset} from '../model/asset.model';
 import {MenuItem, Message, MessageService} from 'primeng/api';
+import {UIChart} from 'primeng/chart';
 
 @Component({
   selector: 'app-platform',
@@ -14,12 +15,13 @@ export class PlatformComponent implements OnInit {
   myAssets: Asset[];
   menuItems: MenuItem[];
 
+  // list with random generated values for available amount and prices
   priceVsAmountList: any[];
 
   availableMoney: number; // 100000 $
   totalValue: number;
 
-  // selected amount of units to buy oe sell
+  // selected amount of units to buy or sell
   selectedAmount: number;
 
   // selected asset to buy/sell
@@ -31,16 +33,25 @@ export class PlatformComponent implements OnInit {
   sellingDialog: Boolean = false;
 
   // interval to update prices and available amount, seconds
-  timeInterval = 40;
+  timeInterval = 60;
 
   msgs: Message[] = [];
 
-  constructor(private assetsService: AssetsService) { }
+  // line chart data
+  chartData: any;
+
+  // list with latest values of portfolio cost
+  totalAmountData: number[];
+
+  constructor(private assetsService: AssetsService,
+              private messageService: MessageService) { }
 
   ngOnInit() {
     this.myAssets = [];
+    this.totalAmountData = [0, 0, 0, 0, 0, 0, 0];
     this.availableMoney = 100000;
 
+    this.initChartData();
     this.initMenuItems();
 
     this.assetsService.getAssets().subscribe( assetsList => {
@@ -73,6 +84,18 @@ export class PlatformComponent implements OnInit {
 
   }
 
+  initChartData() {
+    this.chartData = {
+      labels: [1, 2, 3, 4, 5, 6, 7],
+      datasets: [{
+          label: 'My portfolio value',
+          data: this.totalAmountData,
+          borderColor: '#4bc0c0'
+        }]
+    };
+    this.chartData.datasets.data = Object.assign({}, this.totalAmountData);
+  }
+
   generateRandomPriceAndAmount(assets: Asset[]) {
     this.priceVsAmountList = [];
 
@@ -82,7 +105,7 @@ export class PlatformComponent implements OnInit {
     return assets.forEach( a => {
 
       randomAmount = this.generateAmount();
-      randomStockPrice = Number(this.generateStockPrice(a.name).toFixed(2));
+      randomStockPrice = +this.generateStockPrice(a.name).toFixed(2);
 
       this.priceVsAmountList.push({ name: a.name, price: randomStockPrice, amount: randomAmount});
     });
@@ -109,14 +132,19 @@ export class PlatformComponent implements OnInit {
                              name: as.name,
                              amount: as.amount,
                              price: this.findPriceByAssetName(as.name),
-                             value: Number(asValue.toFixed(2))});
+                             value: +asValue.toFixed(2)});
 
         // count total costs of your assets with current prices
-        this.totalValue += Number(asValue.toFixed(2));
+        this.totalValue += +asValue.toFixed(2);
       });
+      // take latest x values of portfolio cost to represent statistic
+      this.totalAmountData.push(this.totalValue);
+      this.totalAmountData.shift();
+
+      // update chart
+      this.initChartData();
+
       this.myAssets = this.myAssets.filter( as => as.amount !== 0);
-      console.log(this.myAssets);
-      console.log(this.totalValue);
     }
   }
 
@@ -170,13 +198,16 @@ export class PlatformComponent implements OnInit {
   }
 
   buyAsset() {
+
     if (this.selectedAmount - this.selectedAsset.amount > 0) {
         this.showMsg('This amount is not available');
         return;
     }
+
     if (!this.enoughFunds()) {
         this.showMsg('You dont have enough funds');
         return;
+
     } else {
       this.availableMoney = this.availableMoney - this.selectedAmount * Number(this.selectedAsset.price);
 
@@ -190,10 +221,12 @@ export class PlatformComponent implements OnInit {
   }
 
   sellAsset() {
+
     if (this.selectedAmount - this.selectedAsset.amount > 0) {
       this.showMsg('You have only ' + this.selectedAsset.amount + ' to sell');
       return;
     }
+
     this.showMsg('The operation has been successful');
 
     this.updateList(this.selectedAsset, false);
@@ -221,11 +254,13 @@ export class PlatformComponent implements OnInit {
   }
 
   updateList(item: Asset, buy: boolean) {
+
     let asAmount;
+
     if (buy) {
-      asAmount = Number(item.amount) + Number(this.selectedAmount);
+       asAmount = Number(item.amount) + Number(this.selectedAmount);
     } else {
-      asAmount = item.amount - this.selectedAmount;
+       asAmount = item.amount - this.selectedAmount;
     }
 
     const asValue = asAmount * this.findPriceByAssetName(item.name).toFixed(2);
@@ -234,11 +269,12 @@ export class PlatformComponent implements OnInit {
                       name: item.name,
                       amount: asAmount,
                       price:  this.findPriceByAssetName(item.name),
-                      value: asValue};
+                      value: asValue };
 
     const atIndex = this.myAssets.findIndex( a => a.name === item.name);
     this.myAssets = this.update(this.myAssets, newItem, atIndex);
-    // update my portfolio table
+
+    // update my assets and my portfolio table
     this.generateMyAssetsList(this.myAssets);
   }
 
@@ -264,5 +300,11 @@ export class PlatformComponent implements OnInit {
   showMsg(msg: string) {
     this.msgs = [];
     this.msgs.push({severity: 'info', summary: 'Message', detail: ': ' + msg});
+  }
+
+  selectData(event) {
+    this.messageService.clear();
+    this.messageService.add({severity: 'info', summary: 'My portfolio total value ',
+                              'detail': this.chartData.datasets[event.element._datasetIndex].data[event.element._index] + ' $'});
   }
 }

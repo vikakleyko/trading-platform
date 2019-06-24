@@ -1,5 +1,5 @@
 .ui-container {
-  margin: 70px 120px;
+  margin: 100px 300px;
 }
 
 
@@ -10,4 +10,16 @@
   display: inline-block;
   min-width: 160px;
   line-height: 3;
+}
+.chart {
+  padding: 0 100px;
+}
+p-table {
+  line-height: 2;
+}
+p-messages {
+  position: absolute;
+  top: 0;
+  right: 10px;
+  width: 500px;
 }

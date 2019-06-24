@@ -30,6 +30,10 @@ Run `npm install primeng --save` [Protractor](https://www.primefaces.org/primeng
 
 Run `npm install primeicons --save` [Protractor](https://www.primefaces.org/primeng/#/setup).
 
+## Install primeng charts
+
+Run `npm install chart.js --save` [Protractor](https://www.primefaces.org/primeng/#/chart).
+
 ## Install animations module
 
 Run `npm install @angular/animations --save` [Protractor](https://www.primefaces.org/primeng/#/setup).

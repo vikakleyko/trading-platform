@@ -19,6 +19,8 @@ import {DialogModule} from 'primeng/dialog';
 import {InputTextModule} from 'primeng/inputtext';
 import {MessagesModule} from 'primeng/messages';
 import {MessageModule} from 'primeng/message';
+import {ChartModule} from 'primeng/chart';
+import {MessageService} from 'primeng/api';
 
 @NgModule({
   declarations: [
@@ -40,12 +42,14 @@ import {MessageModule} from 'primeng/message';
     DialogModule,
     InputTextModule,
     MessagesModule,
-    MessageModule
+    MessageModule,
+    ChartModule
   ],
   providers: [
     AuthService,
     AuthGuard,
-    AssetsService
+    AssetsService,
+    MessageService
   ],
   bootstrap: [AppComponent]
 })

@@ -26,7 +26,11 @@
 
   <div *ngIf="myAssets.length === 0" class="no-assets-title">No assets</div>
 
-  <div *ngIf="myAssets.length !== 0">Total value: {{totalValue}}</div>
+  <div *ngIf="myAssets.length !== 0" style="padding: 20px;">Total value: {{totalValue.toFixed(2)}}</div>
+
+  <div class="chart">
+    <p-chart #chart type="line" [data]="chartData" [options]="datasets" (onDataSelect)="selectData($event)"></p-chart>
+  </div>
 
 </div>
 
