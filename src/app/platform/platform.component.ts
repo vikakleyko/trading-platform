@@ -18,7 +18,7 @@ export class PlatformComponent implements OnInit {
   // list with random generated values for available amount and prices
   priceVsAmountList: any[];
 
-  availableMoney: number; // 100000 $
+  availableFunds: number; // 100000 $
   totalValue: number;
 
   // selected amount of units to buy or sell
@@ -33,7 +33,7 @@ export class PlatformComponent implements OnInit {
   sellingDialog: Boolean = false;
 
   // interval to update prices and available amount, seconds
-  timeInterval = 60;
+  timeInterval = 20;
 
   msgs: Message[] = [];
 
@@ -41,15 +41,15 @@ export class PlatformComponent implements OnInit {
   chartData: any;
 
   // list with latest values of portfolio cost
-  totalAmountData: number[];
+  totalFundsChartData: number[];
 
   constructor(private assetsService: AssetsService,
               private messageService: MessageService) { }
 
   ngOnInit() {
     this.myAssets = [];
-    this.totalAmountData = [0, 0, 0, 0, 0, 0, 0];
-    this.availableMoney = 100000;
+    this.totalFundsChartData = [0, 0, 0, 0, 0, 0, 0];
+    this.availableFunds = 100000;
 
     this.initChartData();
     this.initMenuItems();
@@ -89,11 +89,11 @@ export class PlatformComponent implements OnInit {
       labels: [1, 2, 3, 4, 5, 6, 7],
       datasets: [{
           label: 'My portfolio value',
-          data: this.totalAmountData,
+          data: this.totalFundsChartData,
           borderColor: '#4bc0c0'
         }]
     };
-    this.chartData.datasets.data = Object.assign({}, this.totalAmountData);
+    this.chartData.datasets.data = Object.assign({}, this.totalFundsChartData);
   }
 
   generateRandomPriceAndAmount(assets: Asset[]) {
@@ -138,8 +138,8 @@ export class PlatformComponent implements OnInit {
         this.totalValue += +asValue.toFixed(2);
       });
       // take latest x values of portfolio cost to represent statistic
-      this.totalAmountData.push(this.totalValue);
-      this.totalAmountData.shift();
+      this.totalFundsChartData.push(this.totalValue + this.availableFunds);
+      this.totalFundsChartData.shift();
 
       // update chart
       this.initChartData();
@@ -209,7 +209,7 @@ export class PlatformComponent implements OnInit {
         return;
 
     } else {
-      this.availableMoney = this.availableMoney - this.selectedAmount * Number(this.selectedAsset.price);
+      this.availableFunds = this.availableFunds - this.selectedAmount * Number(this.selectedAsset.price);
 
       this.showMsg('The operation has been successful');
 
@@ -284,7 +284,7 @@ export class PlatformComponent implements OnInit {
   }
 
   enoughFunds() {
-    return this.availableMoney > this.selectedAmount * this.selectedAsset.price;
+    return this.availableFunds > this.selectedAmount * this.selectedAsset.price;
   }
 
   openPortfolioPage() {
