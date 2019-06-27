@@ -15,16 +15,14 @@ export class PlatformComponent implements OnInit {
   myAssets: Asset[];
   menuItems: MenuItem[];
 
-  // list with random generated values for available amount and prices
+  // current asset price and available amount list
   priceVsAmountList: any[];
 
-  availableFunds: number; // 100000 $
-  totalValue: number;
+  availableFunds: number;
+  totalAssetsValue: number;
 
-  // selected amount of units to buy or sell
   selectedAmount: number;
 
-  // selected asset to buy/sell
   selectedAsset: Asset;
 
   showPortfolioPage: Boolean = true;
@@ -32,8 +30,7 @@ export class PlatformComponent implements OnInit {
   buyingDialog: Boolean = false;
   sellingDialog: Boolean = false;
 
-  // interval to update prices and available amount, seconds
-  timeInterval = 20;
+  timeInterval = 60;  // seconds
 
   msgs: Message[] = [];
 
@@ -48,53 +45,51 @@ export class PlatformComponent implements OnInit {
 
   ngOnInit() {
     this.myAssets = [];
-    this.totalFundsChartData = [0, 0, 0, 0, 0, 0, 0];
     this.availableFunds = 100000;
+    this.totalAssetsValue = this.availableFunds;
+    this.generateTotalFundsChartData(); // init list with chart data
 
-    this.initChartData();
-    this.initMenuItems();
+    this.initChart();
+    this.initTabMenuItems();
 
     this.assetsService.getAssets().subscribe( assetsList => {
 
       if (assetsList.length != null) {
-        this.generateLists(assetsList);
-
-        setInterval(() => {
           this.generateLists(assetsList);
-        }, this.timeInterval * 1000);
 
-      } else {
-        console.log('assets list is empty');
+          setInterval(() => {
+            this.generateLists(assetsList);
+          }, this.timeInterval * 1000);
+
+        } else {
+          console.log('assets list is empty');
       }
     });
   }
 
-  initMenuItems() {
+  initTabMenuItems() {
     this.menuItems = [
       {label: 'PORTFOLIO', command: () => this.openPortfolioPage()},
       {label: 'BUY/SELL ASSETS', command: () => this.openBuySellPage()},
     ];
   }
 
+  // updates every time interval
   generateLists(assetsList: Asset[]) {
-
     this.generateRandomPriceAndAmount(assetsList);
     this.generateAllAssetsList(assetsList);
-    this.generateMyAssetsList(this.myAssets);
 
+    if (this.myAssets.length != null) {
+      this.generateMyAssetsList(this.myAssets);
+      this.generateTotalPortfolioValue(this.myAssets);
+    }
+    this.updateChart();
   }
 
-  initChartData() {
-    this.chartData = {
-      labels: [1, 2, 3, 4, 5, 6, 7],
-      datasets: [{
-          label: 'My portfolio value',
-          data: this.totalFundsChartData,
-          borderColor: '#4bc0c0'
-        }]
-    };
-    this.chartData.datasets.data = Object.assign({}, this.totalFundsChartData);
-  }
+
+  // ==============================================
+  //      random price and amount list
+  // ==============================================
 
   generateRandomPriceAndAmount(assets: Asset[]) {
     this.priceVsAmountList = [];
@@ -111,6 +106,11 @@ export class PlatformComponent implements OnInit {
     });
   }
 
+
+  // ==============================================
+  //      all assets list generator
+  // ==============================================
+
   generateAllAssetsList(assets: Asset[]) {
     this.allAssets = [];
 
@@ -120,10 +120,12 @@ export class PlatformComponent implements OnInit {
     });
   }
 
-  generateMyAssetsList(assets: Asset[]) {
-    if (assets.length != null) {
 
-      this.totalValue = 0;
+  // ==============================================
+  //      my assets list generator
+  // ==============================================
+
+  generateMyAssetsList(assets: Asset[]) {
       this.myAssets = [];
 
       assets.forEach( as => {
@@ -134,21 +136,29 @@ export class PlatformComponent implements OnInit {
                              price: this.findPriceByAssetName(as.name),
                              value: +asValue.toFixed(2)});
 
-        // count total costs of your assets with current prices
-        this.totalValue += +asValue.toFixed(2);
+        this.totalAssetsValue += +asValue.toFixed(2);
       });
-      // take latest x values of portfolio cost to represent statistic
-      this.totalFundsChartData.push(this.totalValue + this.availableFunds);
-      this.totalFundsChartData.shift();
-
-      // update chart
-      this.initChartData();
-
-      this.myAssets = this.myAssets.filter( as => as.amount !== 0);
-    }
   }
 
-  // return random int as available amount
+
+  // ==============================================
+  //         total portfolio value
+  // ==============================================
+
+  generateTotalPortfolioValue(assets: Asset[]) {
+      this.totalAssetsValue = 0;
+
+      assets.forEach( as => {
+        const asValue = Number(as.amount * this.findPriceByAssetName(as.name));
+        this.totalAssetsValue += +asValue.toFixed(2);
+      });
+  }
+
+
+  // ==============================================
+  //       random amount and price generators
+  // ==============================================
+
   generateAmount() {
     return 3000 + this.getRandomInt(-1500, 1500);
   }
@@ -171,6 +181,199 @@ export class PlatformComponent implements OnInit {
     return Math.abs(3 * Math.sin(2 * hash * n) + Math.random() * amplitude);
   }
 
+
+  // ==============================================
+  //        buying/selling assets functions
+  // ==============================================
+
+  buyAsset() {
+    if (this.selectedAmount - this.selectedAsset.amount > 0) {
+        this.showMsg('This amount is not available');
+        return;
+    }
+    if (!this.enoughFunds()) {
+        this.showMsg('You dont have enough funds');
+        return;
+    } else {
+      this.availableFunds = this.availableFunds - this.selectedAmount * Number(this.selectedAsset.price);
+
+      this.updateMyAssetsList(this.selectedAsset.name, true);
+      this.updateAllAssetsList(this.selectedAsset.name, true);
+
+      this.buyingDialog = false;
+      this.selectedAmount = 0;
+    }
+  }
+
+  sellAsset() {
+    if (this.selectedAmount - this.selectedAsset.amount > 0) {
+        this.showMsg('You have only ' + this.selectedAsset.amount + ' to sell');
+        return;
+    }
+    const myAssetsItem = this.myAssets.filter( a => a.name === this.selectedAsset.name);
+
+    this.availableFunds = +(this.availableFunds + this.selectedAmount * Number(myAssetsItem[0].price)).toFixed(2);
+
+    this.updateMyAssetsList(this.selectedAsset.name, false);
+    this.updateAllAssetsList(this.selectedAsset.name, false);
+
+    this.sellingDialog = false;
+    this.selectedAmount = 0;
+  }
+
+
+  // ==============================================
+  //     update amount and my assets list
+  // ==============================================
+
+  updateMyAssetsList(itemName: string, buy: boolean) {
+    let asAmount;
+    const myAssetsItem = this.myAssets.filter( a => a.name === itemName);
+    const item = myAssetsItem[0];
+
+    if (!myAssetsItem[0]) {
+        const newAsset = {id: this.selectedAsset.id,
+                          name: this.selectedAsset.name,
+                          amount: this.selectedAmount,
+                          price: this.findPriceByAssetName(this.selectedAsset.name),
+                          value: +(this.selectedAmount * this.findPriceByAssetName(this.selectedAsset.name)).toFixed(2)};
+
+      this.myAssets = [...this.myAssets, newAsset];
+
+      } else {
+      if (buy) {
+          asAmount = Number(myAssetsItem[0].amount) + Number(this.selectedAmount);
+        } else {
+          asAmount = myAssetsItem[0].amount - this.selectedAmount;
+       }
+
+      const newItem = { id: item.id,
+                        name: item.name,
+                        amount: asAmount,
+                        price: this.findPriceByAssetName(item.name),
+                        value: +asAmount * this.findPriceByAssetName(item.name).toFixed(2) };
+
+        const updatedAssets = [...this.myAssets.filter( a => a.name !== newItem.name)];
+        updatedAssets.push(newItem);
+        this.myAssets = updatedAssets.filter( as => as.amount !== 0);
+    }
+        this.showMsg('The operation has been successful');
+  }
+
+  updateAllAssetsList(itemName: string, buy: boolean) {
+    let asAmount;
+    const allAssetsItem = this.allAssets.filter( a => a.name === itemName);
+    const item = allAssetsItem[0];
+
+    if (buy) {
+        asAmount = item.amount - this.selectedAmount;
+    } else {
+        asAmount = Number(item.amount) + Number(this.selectedAmount);
+    }
+
+    const newItem = { id: item.id,
+                      name: item.name,
+                      amount: asAmount,
+                      price: this.findPriceByAssetName(item.name),
+                      value: +asAmount * this.findPriceByAssetName(item.name).toFixed(2) };
+
+      const updatedAssets = [...this.allAssets.filter( a => a.name !== newItem.name)];
+      updatedAssets.push(newItem);
+      this.allAssets = updatedAssets;
+      this.sortAllAssetsById();
+
+      this.showMsg('The operation has been successful');
+  }
+
+  // ==============================================
+  //              dialogs and tabs
+  /// =============================================
+
+  openDialogToBuy(asset: Asset) {
+    this.selectedAsset = asset;
+    if (this.selectedAsset.amount === 0) {
+      this.showMsg('This asset is not available');
+      return;
+    }
+    this.buyingDialog = true;
+  }
+
+  openDialogToSell(asset: Asset) {
+    if (this.findAssetByName(asset)) {
+      this.selectedAsset = this.myAssets.filter( as => as.name === asset.name)[0];
+      this.sellingDialog = true;
+    } else {
+      this.showMsg('you dont hane this kind of asset'); // dont open dialog
+    }
+  }
+
+  openPortfolioPage() {
+    this.showPortfolioPage = true;
+    this.showBuySellPage = false;
+    this.generateTotalPortfolioValue(this.myAssets);
+  }
+
+  openBuySellPage() {
+    this.showBuySellPage = true;
+    this.showPortfolioPage = false;
+  }
+
+  // ==============================================
+  //                  messages
+  // ==============================================
+
+  showMsg(msg: string) {
+    this.msgs = [];
+    this.msgs.push({severity: 'info', summary: 'Message', detail: ': ' + msg});
+  }
+
+
+  // ==============================================
+  //              line chart data
+  // ==============================================
+
+
+  generateTotalFundsChartData() {
+    this.totalFundsChartData = [];
+    let i;
+    for (i = 0; i < 7; i++) {
+      this.totalFundsChartData.push(this.availableFunds);
+    }
+  }
+
+  initChart() {
+    this.chartData = {
+      labels: [1, 2, 3, 4, 5, 6, 7],
+      datasets: [{
+        label: 'My portfolio value',
+        data: this.totalFundsChartData,
+        borderColor: '#7fbcec'
+      }]
+    };
+    this.chartData.datasets.data = Object.assign({}, this.totalFundsChartData);
+  }
+
+  updateChart() {
+    this.totalFundsChartData.push(this.totalAssetsValue + this.availableFunds);
+    this.totalFundsChartData.shift();
+
+    // update chart with new data
+    this.initChart();
+  }
+
+  selectData(event) {
+    this.messageService.clear();
+    this.messageService.add({
+      severity: 'info',
+      summary: 'My portfolio total value ',
+      'detail': +(this.chartData.datasets[event.element._datasetIndex].data[event.element._index]).toFixed(2) + ' $'});
+  }
+
+
+  enoughFunds() {
+    return this.availableFunds > this.selectedAmount * this.selectedAsset.price;
+  }
+
   findAmountByAssetName(name: string) {
     return this.priceVsAmountList.find( item => item.name === name).amount;
   }
@@ -183,128 +386,16 @@ export class PlatformComponent implements OnInit {
     return this.myAssets.find( as => as.name === asset.name);
   }
 
-  openDialogToBuy(asset: Asset) {
-    this.selectedAsset = asset;
-    this.buyingDialog = true;
-  }
-
-  openDialogToSell(asset: Asset) {
-    if (this.findAssetByName(asset)) {
-        this.selectedAsset = this.myAssets.filter( as => as.name === asset.name)[0];
-        this.sellingDialog = true;
-    } else {
-      this.showMsg('you dont this kind of asset');
-    }
-  }
-
-  buyAsset() {
-
-    if (this.selectedAmount - this.selectedAsset.amount > 0) {
-        this.showMsg('This amount is not available');
-        return;
-    }
-
-    if (!this.enoughFunds()) {
-        this.showMsg('You dont have enough funds');
-        return;
-
-    } else {
-      this.availableFunds = this.availableFunds - this.selectedAmount * Number(this.selectedAsset.price);
-
-      this.showMsg('The operation has been successful');
-
-      this.continueBuying(this.selectedAsset);
-
-      this.buyingDialog = false;
-      this.selectedAmount = 0;
-    }
-  }
-
-  sellAsset() {
-
-    if (this.selectedAmount - this.selectedAsset.amount > 0) {
-      this.showMsg('You have only ' + this.selectedAsset.amount + ' to sell');
-      return;
-    }
-
-    this.showMsg('The operation has been successful');
-
-    this.updateList(this.selectedAsset, false);
-
-    this.sellingDialog = false;
-    this.selectedAmount = 0;
-  }
-
-  continueBuying(asset: Asset) {
-    const existingItem = this.myAssets.filter( a => a.name === asset.name);
-
-    if (!existingItem[0]) {
-        this.myAssets.push({id: asset.id,
-                            name: asset.name,
-                            amount: this.selectedAmount,
-                            price: this.findPriceByAssetName(asset.name),
-                            value: +(this.selectedAmount * this.findPriceByAssetName(asset.name)).toFixed(2)});
-
-      // update my portfolio table
-      this.generateMyAssetsList(this.myAssets);
-
-    } else {
-          this.updateList(existingItem[0], true);
+  sortAllAssetsById() {
+    this.allAssets.sort(function(obj1, obj2) {
+      if ( obj1.id < obj2.id ) {
+        return -1;
+      } else
+      if ( obj1.id > obj2.id ) {
+        return 1;
+      } else {
+        return 0;
       }
-  }
-
-  updateList(item: Asset, buy: boolean) {
-
-    let asAmount;
-
-    if (buy) {
-       asAmount = Number(item.amount) + Number(this.selectedAmount);
-    } else {
-       asAmount = item.amount - this.selectedAmount;
-    }
-
-    const asValue = asAmount * this.findPriceByAssetName(item.name).toFixed(2);
-
-    const newItem = { id: item.id,
-                      name: item.name,
-                      amount: asAmount,
-                      price:  this.findPriceByAssetName(item.name),
-                      value: asValue };
-
-    const atIndex = this.myAssets.findIndex( a => a.name === item.name);
-    this.myAssets = this.update(this.myAssets, newItem, atIndex);
-
-    // update my assets and my portfolio table
-    this.generateMyAssetsList(this.myAssets);
-  }
-
-  // update selected asset parameters
-  update(array, newItem, atIndex) {
-    return array.map((item, index) => index === atIndex ? newItem : item);
-  }
-
-  enoughFunds() {
-    return this.availableFunds > this.selectedAmount * this.selectedAsset.price;
-  }
-
-  openPortfolioPage() {
-    this.showPortfolioPage = true;
-    this.showBuySellPage = false;
-  }
-
-  openBuySellPage() {
-    this.showBuySellPage = true;
-    this.showPortfolioPage = false;
-  }
-
-  showMsg(msg: string) {
-    this.msgs = [];
-    this.msgs.push({severity: 'info', summary: 'Message', detail: ': ' + msg});
-  }
-
-  selectData(event) {
-    this.messageService.clear();
-    this.messageService.add({severity: 'info', summary: 'My portfolio total value ',
-                              'detail': this.chartData.datasets[event.element._datasetIndex].data[event.element._index] + ' $'});
+    });
   }
 }

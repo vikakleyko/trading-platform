@@ -1,10 +1,23 @@
 .ui-container {
-  margin: 100px 300px;
+  margin-left: auto;
+  margin-right: auto;
+  width: 900px;
+  margin-top: 30px;
+  border: 1px solid lightgrey;
+  padding: 30px 50px;
+  border-radius: 3px;
 }
-
-
+.top-panel {
+  width: 100%;
+  text-align: right;
+  margin-bottom: -35px;
+}
+.bottom-panel {
+  width: 100%;
+  text-align: right;
+}
 .no-assets-title {
-  margin: 40px;
+  margin: 20px;
 }
 .item-name {
   display: inline-block;
@@ -12,14 +25,40 @@
   line-height: 3;
 }
 .chart {
-  padding: 0 100px;
+  padding: 50px;
 }
 p-table {
-  line-height: 2;
+  line-height: 1.5;
 }
 p-messages {
   position: absolute;
   top: 0;
   right: 10px;
-  width: 500px;
+  width: 350px;
+}
+.assets-value-header {
+  padding: 20px;
+  text-align: right;
+  background-color: #7fbcec;
+  margin: 5px;
+  border-radius: 3px;
+}
+.available-funds-header {
+  display: inline-flex;
+  background-color: rgb(12, 77, 129);
+  margin: 5px;
+  border-radius: 3px;
+  padding: 20px;
+  color: white;
+}
+.total-value-header {
+  display: inline-flex;
+  background-color: rgb(12, 77, 129);
+  margin: 5px;
+  border-radius: 3px;
+  padding: 20px;
+  color: white;
+}
+.disabledItem {
+  color: grey;
 }

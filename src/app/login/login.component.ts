@@ -19,7 +19,9 @@ export class LoginComponent implements OnInit {
               private formBuilder: FormBuilder ) { }
 
   ngOnInit() {
-    this.authService.logout();
+    if (this.authService.isLoggedIn()) {
+      this.authService.logout();
+    }
     this.loginForm  =  this.formBuilder.group({
       username: ['', Validators.required],
       password: ['', Validators.required]
