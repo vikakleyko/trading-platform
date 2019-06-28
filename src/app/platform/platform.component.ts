@@ -197,8 +197,8 @@ export class PlatformComponent implements OnInit {
     } else {
       this.availableFunds = this.availableFunds - this.selectedAmount * Number(this.selectedAsset.price);
 
-      this.updateMyAssetsList(this.selectedAsset.name, true);
-      this.updateAllAssetsList(this.selectedAsset.name, true);
+      this.updateMyAssetsList(true);
+      this.updateAllAssetsList(true);
 
       this.buyingDialog = false;
       this.selectedAmount = 0;
@@ -214,8 +214,8 @@ export class PlatformComponent implements OnInit {
 
     this.availableFunds = +(this.availableFunds + this.selectedAmount * Number(myAssetsItem[0].price)).toFixed(2);
 
-    this.updateMyAssetsList(this.selectedAsset.name, false);
-    this.updateAllAssetsList(this.selectedAsset.name, false);
+    this.updateMyAssetsList(false);
+    this.updateAllAssetsList(false);
 
     this.sellingDialog = false;
     this.selectedAmount = 0;
@@ -226,9 +226,9 @@ export class PlatformComponent implements OnInit {
   //     update amount and my assets list
   // ==============================================
 
-  updateMyAssetsList(itemName: string, buy: boolean) {
+  updateMyAssetsList(buy: boolean) {
     let asAmount;
-    const myAssetsItem = this.myAssets.filter( a => a.name === itemName);
+    const myAssetsItem = this.myAssets.filter( a => a.name === this.selectedAsset.name);
     const item = myAssetsItem[0];
 
     if (!myAssetsItem[0]) {
@@ -260,9 +260,9 @@ export class PlatformComponent implements OnInit {
         this.showMsg('The operation has been successful');
   }
 
-  updateAllAssetsList(itemName: string, buy: boolean) {
+  updateAllAssetsList(buy: boolean) {
     let asAmount;
-    const allAssetsItem = this.allAssets.filter( a => a.name === itemName);
+    const allAssetsItem = this.allAssets.filter( a => a.name === this.selectedAsset.name);
     const item = allAssetsItem[0];
 
     if (buy) {
