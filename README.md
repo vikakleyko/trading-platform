@@ -7,11 +7,11 @@ This project was generated with [Angular CLI](https://github.com/angular/angular
 Online Trading platform Mockup
 For this task we want to you design and code a mockup Online Trading platform.
 The platform should fulfill the following requirements: 
-- a login page where the user login, 
-- an overview page where the user can see his current portfolio as well as its current
+- A login page where the user login, 
+- An Overview page where the user can see his current portfolio as well as its current
 value and a Trend graph for the portfolio that updates in real time (refreshes with a
 given interval). 
-- a buy and sell page where the user can spend money buying assets (the user
+- A Buy and sell page where the user can spend money buying assets (the user
 should start with a given amount $100 000) and it should be decremented or
 incremented depending upon the users selling and buying of stocks.
 
