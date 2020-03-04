@@ -5,8 +5,8 @@ This project was generated with [Angular CLI](https://github.com/angular/angular
 # Description
 
 Online Trading platform Mockup
-For this task we want to you design and code a mockup Online Trading platform.
-The platform should fulfill the following requirements: 
+
+The platform includes: 
 - A login page where the user login, 
 - An Overview page where the user can see his current portfolio as well as its current
 value and a Trend graph for the portfolio that updates in real time (refreshes with a
