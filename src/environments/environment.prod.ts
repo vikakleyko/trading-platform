@@ -1,4 +1,6 @@
 export const environment = {
   production: true,
-  assetsURL: '',
+  assetsURL: './assets/assets-list.json',
+  username: 'dev',
+  password: 'dev',
 };
