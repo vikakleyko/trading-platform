@@ -79,3 +79,8 @@
 .login input[type="submit"]:focus {
   border-color: #05a;
 }
+.hint{
+  padding: 0 12px;
+  font-size: 14px;
+
+}
