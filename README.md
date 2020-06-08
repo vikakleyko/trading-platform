@@ -4,7 +4,7 @@ This project was generated with [Angular CLI](https://github.com/angular/angular
 
 # Description
 
-Online Trading platform 
+Online Trading platform mockup
 
 The platform includes: 
 - A login page where the user login, 
