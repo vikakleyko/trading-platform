@@ -15,6 +15,17 @@ given interval).
 should start with a given amount $100 000) and it should be decremented or
 incremented depending upon the users selling and buying of stocks.
 
+## To get started
+Clone down this repository. You will need node and npm installed globally on your machine.
+
+Installation:
+
+npm install
+
+To Start Server:
+
+npm start
+
 ## Development server
 
 Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`. The app will automatically reload if you change any of the source files.
