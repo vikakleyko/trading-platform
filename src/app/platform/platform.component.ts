@@ -52,7 +52,23 @@ export class PlatformComponent implements OnInit {
     this.initChart();
     this.initTabMenuItems();
 
-    this.assetsService.getAssets().subscribe( assetsList => {
+    /* this.assetsService.getAssets().subscribe( assetsList => { */
+      let assetsList = [{
+        id: 1,
+        name: "gold",
+      },
+      {
+        id: 2,
+        name: "silver",
+      },
+      {
+        id: 3,
+        name: "palladium",
+      },
+      {
+        id: 4,
+        name: "platinum",
+      }]
 
       if (assetsList.length != null) {
           this.generateLists(assetsList);
@@ -64,7 +80,7 @@ export class PlatformComponent implements OnInit {
         } else {
           console.log('assets list is empty');
       }
-    });
+    // }); 
   }
 
   initTabMenuItems() {
@@ -75,7 +91,7 @@ export class PlatformComponent implements OnInit {
   }
 
   // updates every time interval
-  generateLists(assetsList: Asset[]) {
+  generateLists(assetsList) {
     this.generateRandomPriceAndAmount(assetsList);
     this.generateAllAssetsList(assetsList);
 

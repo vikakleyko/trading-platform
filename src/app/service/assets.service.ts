@@ -14,11 +14,12 @@ export class AssetsService {
 
   url = environment.assetsURL;
 
-  getAssets(): Observable<Asset[]> {
+  // temporary commented to deply app
+  /* getAssets(): Observable<Asset[]> {
     return this.http.get<AssetsList>(this.url, { responseType:'text' as 'json'}).pipe(map(
       (resp => {
         return resp.assets || [];
       })
     ));
-  }
+  } */
 }
