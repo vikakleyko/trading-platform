@@ -15,7 +15,7 @@ export class AssetsService {
   url = environment.assetsURL;
 
   getAssets(): Observable<Asset[]> {
-    return this.http.get<AssetsList>(this.url, {responseType: 'json'}).pipe(map(
+    return this.http.get<AssetsList>(this.url, { responseType:'text' as 'json'}).pipe(map(
       (resp => {
         return resp.assets || [];
       })
